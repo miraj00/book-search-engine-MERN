@@ -1,52 +1,65 @@
 import React, { useState } from 'react';
 import { Form, Button, Alert } from 'react-bootstrap';
-
-import { createUser } from '../utils/API';
+// import { createUser } from '../utils/API';
 import Auth from '../utils/auth';
+import { ADD_USER } from '../utils/mutations';
+import { useMutation } from '@apollo/react-hooks';
+
+
 
 const SignupForm = () => {
-  // set initial form state
-  const [userFormData, setUserFormData] = useState({ username: '', email: '', password: '' });
-  // set state for form validation
-  const [validated] = useState(false);
-  // set state for alert
-  const [showAlert, setShowAlert] = useState(false);
 
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
-    setUserFormData({ ...userFormData, [name]: value });
-  };
+      const [addUser, { error }] = useMutation(ADD_USER);
+      // set initial form state
+      const [userFormData, setUserFormData] = useState({ username: '', email: '', password: '' });
+      // set state for form validation
+      const [validated] = useState(false);
+      // set state for alert
+      const [showAlert, setShowAlert] = useState(false);
 
-  const handleFormSubmit = async (event) => {
-    event.preventDefault();
+      const handleInputChange = (event) => {
+        const { name, value } = event.target;
+        setUserFormData({ ...userFormData, [name]: value });
+      };
 
-    // check if form has everything (as per react-bootstrap docs)
-    const form = event.currentTarget;
-    if (form.checkValidity() === false) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
+      const handleFormSubmit = async (event) => {
+        event.preventDefault();
 
-    try {
-      const response = await createUser(userFormData);
+            // check if form has everything (as per react-bootstrap docs)
+            // const form = event.currentTarget;
+            // if (form.checkValidity() === false) {
+            //   event.preventDefault();
+            //   event.stopPropagation();
+            // }
 
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
+            // try {
+            //   const response = await createUser(userFormData);
 
-      const { token, user } = await response.json();
-      console.log(user);
-      Auth.login(token);
-    } catch (err) {
-      console.error(err);
-      setShowAlert(true);
-    }
+            //   if (!response.ok) {
+            //     throw new Error('something went wrong!');
+            //   }
 
-    setUserFormData({
-      username: '',
-      email: '',
-      password: '',
-    });
+            //   const { token, user } = await response.json();
+            //   console.log(user);
+            //   Auth.login(token);
+
+            try {
+              const { data } = await addUser({
+                  variables: {...userFormData}
+              });
+  
+              Auth.login(data.addUser.token);
+
+            } catch (err) {
+                  console.error(err);
+                  setShowAlert(true);
+              }
+
+            setUserFormData({
+              username: '',
+              email: '',
+              password: '',
+            });
   };
 
   return (
@@ -102,6 +115,7 @@ const SignupForm = () => {
           variant='success'>
           Submit
         </Button>
+        {error && <div>Sign up failed</div>}
       </Form>
     </>
   );
