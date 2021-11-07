@@ -6,7 +6,7 @@ import Auth from '../utils/auth';
 import { removeBookId } from '../utils/localStorage';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 import { REMOVE_BOOK } from '../utils/mutations';
-import { QUERY_GET_ME } from '../utils/queries';
+import { GET_USER } from '../utils/queries';
 
 
 
@@ -73,7 +73,7 @@ import { QUERY_GET_ME } from '../utils/queries';
   const SavedBooks = () => {
     const [removeBook, { error }] = useMutation(REMOVE_BOOK);
 
-    const { loading, data } = useQuery(QUERY_GET_ME);
+    const { loading, data } = useQuery(GET_USER);
     const userData = data?.me || {};
 
     const handleDeleteBook = async (bookId) => {
@@ -84,7 +84,7 @@ import { QUERY_GET_ME } from '../utils/queries';
         }
 
         try {
-            const { data } = await removeBook({
+            await removeBook({
                 variables: { bookId }
             });
 
